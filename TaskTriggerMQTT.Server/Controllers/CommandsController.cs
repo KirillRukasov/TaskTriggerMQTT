@@ -17,14 +17,14 @@ namespace TaskTriggerMQTT.Server.Controllers
         [HttpPost("send")]
         public IActionResult SendCommand([FromBody] CommandModel command)
         {
-            _rabbitMQService.SendMessage(command.ButtonNumber.ToString());
+            _rabbitMQService.SendMessageAsync(command.ButtonNumber.ToString());
             return Ok($"Command {command.ButtonNumber} is sent.");
         }
 
         [HttpGet("sendtest")]
         public IActionResult SendTest()
         {
-            _rabbitMQService.SendTestMessage();
+            _rabbitMQService.SendTestMessageAsync();
             return Ok("Test message sent.");
         }
     }

@@ -1,38 +1,43 @@
-﻿using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Mvc;
-using RabbitMQ.Client;
+﻿using MQTTnet;
+using MQTTnet.Client;
+using System;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace TaskTriggerMQTT.Server.Services
 {
     public class RabbitMQService
     {
         private readonly string _hostname = "localhost";
-        private readonly string _queueName = "taskQueue";
-        private readonly string _username = "guest";
-        private readonly string _password = "guest";
+        private readonly int _port = 1883; 
+        private readonly string _topic = "mqtt_Queue"; 
 
-        public void SendMessage(string message)
+        public async Task SendMessageAsync(string message)
         {
-            var factory = new ConnectionFactory() { HostName = _hostname};
-            using var connection = factory.CreateConnection();
-            using var channel = connection.CreateModel();
-                
-            channel.QueueDeclare(queue: _queueName, durable: false, exclusive: false, autoDelete: false, arguments: null);
+            var factory = new MqttFactory();
+            using var mqttClient = factory.CreateMqttClient();
 
-            var body = Encoding.UTF8.GetBytes(message);
-            channel.BasicPublish(exchange: "", routingKey: _queueName, basicProperties: null, body: body);
+            var options = new MqttClientOptionsBuilder()
+                .WithTcpServer(_hostname, _port)
+                .Build();
+
+            await mqttClient.ConnectAsync(options, CancellationToken.None);
+
+            var mqttMessage = new MqttApplicationMessageBuilder()
+                .WithTopic(_topic) 
+                .WithPayload(Encoding.UTF8.GetBytes(message))
+                .Build();
+
+            await mqttClient.PublishAsync(mqttMessage, CancellationToken.None);
 
             Console.WriteLine($" [x] Sent {message}");
         }
 
-        public void SendTestMessage()
+        public async Task SendTestMessageAsync()
         {
             var message = "Test Message";
-            SendMessage(message);
+            await SendMessageAsync(message);
             Console.WriteLine($" [x] Sent {message}");
         }
-
-
     }
 }
