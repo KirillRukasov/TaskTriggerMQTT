@@ -3,9 +3,11 @@ import './App.css';
 
 const App: React.FC = () => {
     const [response, setResponse] = useState<string>('');
+    const [loading, setLoading] = useState<boolean>(false);
 
     const sendCommand = (buttonNumber: number) => {
-        fetch('/api/commands/send', {
+        setLoading(true);
+        fetch('/api/commands/send_and_wait', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -14,9 +16,13 @@ const App: React.FC = () => {
         })
             .then(response => response.text())
             .then(data => {
-                setResponse(`Job done. Response: ${data}`);
+                setLoading(false); 
+                setResponse(`${data}`);
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Error:', error);
+                setLoading(false); 
+            });
     };
 
     const sendTestMessage = () => {
@@ -39,7 +45,9 @@ const App: React.FC = () => {
                         </button>
                     ))}
                 </div>
-                <p>{response}</p>
+                <div>
+                    <p> {loading ? <span className="waiting-dots">waiting</span> : response} </p>
+                </div>
             </header>
             <footer className="App-footer">
                 <button onClick={sendTestMessage}>Test massage</button>

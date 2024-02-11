@@ -49,3 +49,18 @@ button {
     padding: 1rem;
     text-align: center; 
 }
+
+@keyframes blink {
+    0%, 100% {
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+.waiting-dots::after {
+    content: '...';
+    animation: blink 1s infinite;
+}
